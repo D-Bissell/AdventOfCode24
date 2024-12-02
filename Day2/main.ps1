@@ -1,24 +1,4 @@
 
-# The unusual data (your puzzle input) consists of many reports, one report per line. 
-# Each report is a list of numbers called levels that are separated by spaces. For example:
-
-# 7 6 4 2 1
-# 1 2 7 8 9
-# 9 7 6 2 1
-# 1 3 2 4 5
-# 8 6 4 4 1
-# 1 3 6 7 9
-
-# This example data contains six reports each containing five levels.
-
-# The engineers are trying to figure out which reports are safe. 
-# The Red-Nosed reactor safety systems can only tolerate levels that are either gradually increasing or gradually decreasing. 
-# So, a report only counts as safe if both of the following are true:
-
-# SAFE IF
-# The levels are either all increasing or all decreasing.
-# Any two adjacent levels differ by at least one and at most three.
-# In the example above, the reports can be found safe or unsafe by checking those rules:
 
 # 7 6 4 2 1: Safe because the levels are all decreasing by 1 or 2.
 # 1 2 7 8 9: Unsafe because 2 7 is an increase of 5.
@@ -32,7 +12,6 @@
 
 $inputFile = "example.txt"
 
-
 # Create a set of tests
 
 # Test that levels in a report always increase or Decrease
@@ -40,47 +19,83 @@ function testIncreaseOrDecreaseOnly {
     param (
         [array]$report
     )
-
-    [bool]$Increasing = false
-    [bool]$Decreasing = false
     
-    
-    # Get length of report -1:
 
+    # Split the report
+    $levels = $report -split " "
+    if ($levels.Length -eq 1) {
+        return "pass"
+    }    
 
-    #For each n, read n+1 and get difference
+    # Test if initial increase or decrease
+    $increasing = $levels[1] -gt $levels[0]
 
-    # Set a bool for increase or decrease if first loop
+    for ($i = 1; $i -lt (($levels.Length)); $i++) {
+        # Check if still increasing or decreasing
+        $difference = $levels[$i] - $levels[$i - 1]
+        if ((($difference -gt 0) -ne $increasing) -or ($difference -eq 0)) {
+            return ("fail")
+        }
+    }
 
+    return ("pass")
 
-    
 }
 
-
-# Test that levels in a report differ between at least 1, and at most 3
-function testLevelDifference {
+function testlevelsDifference {
     param (
-        [array]$report
-        [int]$minDiff
+        [array]$report,
+        [int]$minDiff,
         [int]$maxDiff
     )
 
-    # Get length of report -1:
+    # Split the report
+    $levels = $report -split " "
 
-    #For each n, read n+1 and get difference
+    # For each consecurive pair
+    for ($i = 1; $i -lt (($levels.Length)); $i++) {
+        # Get the difference
+        $difference = [Math]::Abs($levels[$i] - $levels[$i - 1])
 
-    # Set a bool for increase or decrease if first loop
+        # If difference is outside given range, fail.
+        if (($difference -lt $minDiff) -or ($difference -gt $maxDiff)) {
+            return ("fail")
+        }
+    }
 
-    
+    return("pass")
 }
 
 
-# For each report, run both tests
+# Get content
+$reports = Get-content $inputFile
 
-# Seperate lists
-foreach($report in Get-content $inputFile) {
+$safeCount = 0
+$unsafeCount = 0
 
-    testIncreaseOrDecreaseOnly($report)
-    testLevelDifference($report,1,3)
+foreach ($report in $reports) {
 
+    # If any test fails, report is unsafe.
+    if ((testIncreaseOrDecreaseOnly($report)) -eq "fail") {
+        $unsafeCount += 1
+    }
+    elseif ((testlevelsDifference($report, 1, 3)) -eq "fail") {
+        $unsafeCount += 1
+    }
+    else {
+        $safeCount += 1
+    }
+
+}
+
+Write-Host "Unsafe Count: $unsafeCount"
+Write-Host "Safe Count: $safeCount"
+
+foreach ($report in $reports) {
+    $result1 = testIncreaseOrDecreaseOnly($report)
+    $result2 = testlevelsDifference($report, 1, 3)
+    Write-Host "Report: $report"
+    Write-Host "Increase/Decrease Test: $result1"
+    Write-Host "Difference Test: $result2"
+    Write-Host ""
 }
