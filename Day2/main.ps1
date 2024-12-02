@@ -38,12 +38,15 @@ $inputFile = "example.txt"
 # Test that levels in a report always increase or Decrease
 function testIncreaseOrDecreaseOnly {
     param (
-        [string]$report
+        [array]$report
     )
 
     [bool]$Increasing = false
     [bool]$Decreasing = false
+    
+    
     # Get length of report -1:
+
 
     #For each n, read n+1 and get difference
 
@@ -57,7 +60,7 @@ function testIncreaseOrDecreaseOnly {
 # Test that levels in a report differ between at least 1, and at most 3
 function testLevelDifference {
     param (
-        [string]$report
+        [array]$report
         [int]$minDiff
         [int]$maxDiff
     )
